@@ -1,0 +1,248 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Compass AI Trust Document API",
+    "description": "Generate Trust Documents PDF based on user-provided trust details. Returns a locked PDF document with payment link. The document is unlocked after payment.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://your-backend-domain.com"
+    }
+  ],
+  "paths": {
+    "/documents/trust": {
+      "post": {
+        "summary": "Generate Trust Document PDF",
+        "description": "Creates a professional Trust Deed PDF document based on the provided trust details including trust name, type, trustee, beneficiaries, initial assets, and distribution type. Returns a locked PDF that requires payment to unlock and download.",
+        "operationId": "generateTrustDocument",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TrustDocumentRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Trust Document PDF generated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrustDocumentResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request - missing or incorrect fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error while generating the document",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "TrustDocumentRequest": {
+        "type": "object",
+        "required": [
+          "trustName",
+          "trustType",
+          "trustee",
+          "beneficiaries",
+          "state"
+        ],
+        "properties": {
+          "trustName": {
+            "type": "string",
+            "description": "The full name of the trust, e.g. 'Smith Family Trust'.",
+            "example": "Smith Family Trust"
+          },
+          "trustType": {
+            "type": "string",
+            "description": "The type of trust being created.",
+            "enum": [
+              "Discretionary Family Trust",
+              "Unit Trust",
+              "Hybrid Trust",
+              "Fixed Trust",
+              "Testamentary Trust"
+            ],
+            "example": "Discretionary Family Trust"
+          },
+          "trustee": {
+            "type": "string",
+            "description": "Full name of the appointed trustee who will manage the trust.",
+            "example": "John Smith"
+          },
+          "beneficiaries": {
+            "type": "array",
+            "description": "List of full names of all beneficiaries of the trust.",
+            "items": {
+              "type": "string"
+            },
+            "example": [
+              "Sarah Smith",
+              "Emma Smith",
+              "Michael Smith"
+            ]
+          },
+          "state": {
+            "type": "string",
+            "description": "Australian state or territory under which the trust deed will be drafted.",
+            "enum": [
+              "NSW",
+              "VIC",
+              "QLD",
+              "SA",
+              "WA",
+              "TAS",
+              "ACT",
+              "NT"
+            ],
+            "example": "NSW"
+          },
+          "initialAssets": {
+            "type": "array",
+            "description": "List of initial assets to be settled into the trust with their estimated values.",
+            "items": {
+              "$ref": "#/components/schemas/Asset"
+            },
+            "example": [
+              {
+                "assetType": "Property",
+                "estimatedValue": 850000
+              },
+              {
+                "assetType": "Shares",
+                "estimatedValue": 250000
+              },
+              {
+                "assetType": "Cash",
+                "estimatedValue": 100000
+              }
+            ]
+          },
+          "distributionType": {
+            "type": "string",
+            "description": "How the trust income and assets will be distributed among beneficiaries.",
+            "enum": [
+              "Discretionary (tax-effective distributions)",
+              "Fixed (equal distributions)",
+              "Hybrid (mixed distributions)"
+            ],
+            "example": "Discretionary (tax-effective distributions)"
+          }
+        }
+      },
+      "Asset": {
+        "type": "object",
+        "description": "Represents an initial asset being settled into the trust.",
+        "required": [
+          "assetType",
+          "estimatedValue"
+        ],
+        "properties": {
+          "assetType": {
+            "type": "string",
+            "description": "Type of asset, e.g. Property, Shares, Cash, Crypto, etc.",
+            "example": "Property"
+          },
+          "estimatedValue": {
+            "type": "number",
+            "description": "Estimated value of the asset in AUD.",
+            "example": 850000
+          }
+        }
+      },
+      "TrustDocumentResponse": {
+        "type": "object",
+        "properties": {
+          "documentId": {
+            "type": "string",
+            "description": "Unique identifier for the generated trust document.",
+            "example": "doc_abc123xyz"
+          },
+          "documentName": {
+            "type": "string",
+            "description": "Display name of the generated document.",
+            "example": "Discretionary Trust Deed (NSW)"
+          },
+          "status": {
+            "type": "string",
+            "description": "Current status of the document. LOCKED means payment is required to access the PDF.",
+            "enum": [
+              "LOCKED",
+              "UNLOCKED",
+              "PROCESSING"
+            ],
+            "example": "LOCKED"
+          },
+          "pdfUrl": {
+            "type": "string",
+            "description": "URL to download the PDF document. Only accessible after payment is completed.",
+            "example": "https://your-backend-domain.com/documents/doc_abc123xyz/download"
+          },
+          "paymentUrl": {
+            "type": "string",
+            "description": "URL to the payment page where the user can pay to unlock the document.",
+            "example": "https://your-backend-domain.com/pay/doc_abc123xyz"
+          },
+          "price": {
+            "type": "number",
+            "description": "Total cost in AUD to unlock and download the trust document.",
+            "example": 341.00
+          },
+          "includedServices": {
+            "type": "array",
+            "description": "List of services included with the trust document purchase.",
+            "items": {
+              "type": "string"
+            },
+            "example": [
+              "12 months of ongoing legal support",
+              "Legal review by qualified lawyer",
+              "Trustee Resolutions",
+              "Complete Trust Deed (professionally drafted)"
+            ]
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "description": "Error message describing what went wrong.",
+            "example": "Missing required field: trustee"
+          },
+          "code": {
+            "type": "string",
+            "description": "Machine-readable error code.",
+            "example": "VALIDATION_ERROR"
+          }
+        }
+      }
+    }
+  }
+}
