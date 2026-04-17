@@ -78,6 +78,55 @@ app.post('/documents/trust', (req, res) => {
 });
 
 // ============================================
+// SMSF Document Generation Endpoint
+// ============================================
+app.post('/documents/smsf', (req, res) => {
+  console.log('\n📥 Received SMSF Document Request:');
+  console.log(JSON.stringify(req.body, null, 2));
+
+  const { fundName, trusteeType, members, state } = req.body;
+
+  const missingFields = [];
+  if (!fundName) missingFields.push('fundName');
+  if (!trusteeType) missingFields.push('trusteeType');
+  if (!members || !Array.isArray(members) || members.length === 0) {
+    missingFields.push('members');
+  }
+
+  if (missingFields.length > 0) {
+    console.log('❌ Validation failed:', missingFields);
+    return res.status(400).json({
+      error: `Missing required fields: ${missingFields.join(', ')}`,
+      code: 'VALIDATION_ERROR'
+    });
+  }
+
+  const documentId = `doc_smsf_${uuidv4().split('-')[0]}`;
+  const docState = state || 'NSW';
+  const documentName = `SMSF Setup Deed (${docState})`;
+
+  const response = {
+    documentId: documentId,
+    documentName: documentName,
+    status: 'LOCKED',
+    pdfUrl: `${req.protocol}://${req.get('host')}/documents/${documentId}/download`,
+    paymentUrl: `${req.protocol}://${req.get('host')}/pay/${documentId}`,
+    price: 450.00,
+    includedServices: [
+      'SMSF Trust Deed',
+      'Minutes/Resolutions',
+      'Membership Declarations',
+      'Notices to Regulators'
+    ]
+  };
+
+  console.log('\n✅ Generated SMSF Document:');
+  console.log(JSON.stringify(response, null, 2));
+
+  return res.status(200).json(response);
+});
+
+// ============================================
 // PDF Download Endpoint (mock - returns locked message)
 // ============================================
 app.get('/documents/:documentId/download', (req, res) => {
@@ -110,6 +159,7 @@ app.get('/', (req, res) => {
     version: '1.0.0',
     endpoints: {
       generateTrust: 'POST /documents/trust',
+      generateSmsf: 'POST /documents/smsf',
       downloadPdf: 'GET /documents/:id/download',
       payment: 'GET /pay/:id'
     }
@@ -118,9 +168,10 @@ app.get('/', (req, res) => {
 
 // Start server
 app.listen(PORT, () => {
-  console.log(`\n🚀 Trust Document API running on http://localhost:${PORT}`);
+  console.log(`\n🚀 Compass AI API running on http://localhost:${PORT}`);
   console.log(`\n📋 Available endpoints:`);
   console.log(`   POST http://localhost:${PORT}/documents/trust`);
+  console.log(`   POST http://localhost:${PORT}/documents/smsf`);
   console.log(`   GET  http://localhost:${PORT}/documents/:id/download`);
   console.log(`   GET  http://localhost:${PORT}/pay/:id`);
   console.log(`   GET  http://localhost:${PORT}/  (health check)\n`);

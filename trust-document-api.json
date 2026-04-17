@@ -7,7 +7,7 @@
   },
   "servers": [
     {
-      "url": "https://your-backend-domain.com"
+      "url": "https://copilot-studio-pdf-generation-api.onrender.com"
     }
   ],
   "paths": {

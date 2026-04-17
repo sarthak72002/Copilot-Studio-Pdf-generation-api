@@ -1,0 +1,170 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Compass AI SMSF Document API",
+    "description": "Generate Self-Managed Super Fund (SMSF) Document PDF based on user-provided details. Returns a locked PDF document with payment link.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://copilot-studio-pdf-generation-api.onrender.com"
+    }
+  ],
+  "paths": {
+    "/documents/smsf": {
+      "post": {
+        "summary": "Generate SMSF Document PDF",
+        "description": "Creates a professional SMSF Deed PDF document based on fund name, trustee type, and members. Returns a locked PDF that requires payment to unlock and download.",
+        "operationId": "generateSmsfDocument",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SmsfDocumentRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "SMSF Document PDF generated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request - missing or incorrect fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "SmsfDocumentRequest": {
+        "type": "object",
+        "required": [
+          "fundName",
+          "trusteeType",
+          "members",
+          "state"
+        ],
+        "properties": {
+          "fundName": {
+            "type": "string",
+            "description": "The name of the Self-Managed Super Fund, e.g. 'Smith Super Fund'.",
+            "example": "Smith Super Fund"
+          },
+          "trusteeType": {
+            "type": "string",
+            "description": "Type of trustee appointed for the SMSF.",
+            "enum": [
+              "Corporate Trustee",
+              "Individual Trustees"
+            ],
+            "example": "Corporate Trustee"
+          },
+          "corporateCompanyName": {
+            "type": "string",
+            "description": "If the trusteeType is 'Corporate Trustee', this is the name of the company acting as trustee.",
+            "example": "Smith Pty Ltd"
+          },
+          "members": {
+            "type": "array",
+            "description": "List of full names of the members of the SMSF (who are also usually the directors/individual trustees).",
+            "items": {
+              "type": "string"
+            },
+            "example": [
+              "John Smith",
+              "Jane Smith"
+            ]
+          },
+          "state": {
+            "type": "string",
+            "description": "Australian state or territory governing the SMSF.",
+            "enum": [
+              "NSW",
+              "VIC",
+              "QLD",
+              "SA",
+              "WA",
+              "TAS",
+              "ACT",
+              "NT"
+            ],
+            "example": "NSW"
+          }
+        }
+      },
+      "DocumentResponse": {
+        "type": "object",
+        "properties": {
+          "documentId": {
+            "type": "string",
+            "description": "Unique identifier for the generated document.",
+            "example": "doc_smsf123"
+          },
+          "documentName": {
+            "type": "string",
+            "description": "Display name of the generated document.",
+            "example": "SMSF Setup Deed (NSW)"
+          },
+          "status": {
+            "type": "string",
+            "example": "LOCKED"
+          },
+          "pdfUrl": {
+            "type": "string",
+            "example": "https://copilot-studio-pdf-generation-api.onrender.com/documents/doc_smsf123/download"
+          },
+          "paymentUrl": {
+            "type": "string",
+            "example": "https://copilot-studio-pdf-generation-api.onrender.com/pay/doc_smsf123"
+          },
+          "price": {
+            "type": "number",
+            "example": 450.00
+          },
+          "includedServices": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "example": [
+              "SMSF Trust Deed",
+              "Minutes/Resolutions",
+              "Membership Declarations",
+              "Notices to Regulators"
+            ]
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "example": "Missing required field: members"
+          },
+          "code": {
+            "type": "string",
+            "example": "VALIDATION_ERROR"
+          }
+        }
+      }
+    }
+  }
+}
